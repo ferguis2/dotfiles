@@ -8,36 +8,12 @@ BLUE="\e[0;34m"
 GREEN="\e[0;32m"
 NC="\e[0m"
 
-echo -e "${BLUE}[*] Instalando motor de Powerlevel10k...${NC}"
-
-# Clonar el repositorio oficial de Powerlevel10k en el directorio de usuario
-if [ ! -d "$HOME/powerlevel10k" ]; then
-    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/powerlevel10k
-fi
-
-echo -e "${BLUE}[*] Instalando fuentes MesloLGS Nerd Font para Powerlevel10k y Kitty...${NC}"
-
-FONT_DIR="$HOME/.local/share/fonts"
-mkdir -p "$FONT_DIR"
-
-# Descargar las fuentes solo si no existen
-if [ ! -f "$FONT_DIR/MesloLGS NF Regular.ttf" ]; then
-    echo -e "  -> Descargando fuentes..."
-    wget -qO "$FONT_DIR/MesloLGS NF Regular.ttf" "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf"
-    wget -qO "$FONT_DIR/MesloLGS NF Bold.ttf" "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf"
-    wget -qO "$FONT_DIR/MesloLGS NF Italic.ttf" "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Italic.ttf"
-    wget -qO "$FONT_DIR/MesloLGS NF Bold Italic.ttf" "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf"
-    
-    # Refrescar la caché de fuentes de Linux para que el sistema las reconozca al instante
-    echo -e "  -> Actualizando caché de fuentes..."
-    fc-cache -fv
-else
-    echo -e "  -> Las fuentes ya están instaladas."
-fi
-
 echo -e "${BLUE}[*] Iniciando la automatización de tu entorno Kali Linux...${NC}"
 
-# 1. Actualizar el sistema e instalar paquetes básicos
+# ==========================================
+# 1. ACTUALIZAR E INSTALAR PAQUETES BÁSICOS
+# (Esto va primero para asegurar que tenemos git y wget)
+# ==========================================
 echo -e "${BLUE}[*] Instalando dependencias de interfaz, terminal y desarrollo...${NC}"
 sudo apt update && sudo apt install -y \
     bspwm sxhkd kitty zsh polybar lsd bat \
@@ -52,7 +28,34 @@ if command -v batcat &> /dev/null; then
     ln -sf $(which batcat) ~/.local/bin/bat
 fi
 
-# 2. Configurar el directorio /opt para herramientas pesadas
+# ==========================================
+# 2. DESCARGA DE FUENTES Y POWERLEVEL10K
+# ==========================================
+echo -e "${BLUE}[*] Instalando motor de Powerlevel10k...${NC}"
+if [ ! -d "$HOME/powerlevel10k" ]; then
+    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/powerlevel10k
+fi
+
+echo -e "${BLUE}[*] Instalando fuentes MesloLGS Nerd Font para Powerlevel10k y Kitty...${NC}"
+FONT_DIR="$HOME/.local/share/fonts"
+mkdir -p "$FONT_DIR"
+
+if [ ! -f "$FONT_DIR/MesloLGS NF Regular.ttf" ]; then
+    echo -e "  -> Descargando fuentes..."
+    wget -qO "$FONT_DIR/MesloLGS NF Regular.ttf" "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf"
+    wget -qO "$FONT_DIR/MesloLGS NF Bold.ttf" "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf"
+    wget -qO "$FONT_DIR/MesloLGS NF Italic.ttf" "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Italic.ttf"
+    wget -qO "$FONT_DIR/MesloLGS NF Bold Italic.ttf" "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf"
+    
+    echo -e "  -> Actualizando caché de fuentes..."
+    fc-cache -fv
+else
+    echo -e "  -> Las fuentes ya están instaladas."
+fi
+
+# ==========================================
+# 3. CONFIGURAR /OPT PARA HERRAMIENTAS PESADAS
+# ==========================================
 echo -e "${BLUE}[*] Configurando /opt (Neovim, PEASS-ng, VS Code, Sublime)...${NC}"
 sudo mkdir -p /opt
 
@@ -72,10 +75,12 @@ if [ ! -d "/opt/peass-ng" ]; then
     sudo git clone https://github.com/peass-ng/PEASS-ng.git /opt/peass-ng
 fi
 
-# VS Code y Sublime Text (Instalación por apt si no existen)
-sudo apt install -y code sublime-text 2>/dev/null || echo "Editores instalados."
+# VS Code y Sublime Text
+sudo apt install -y code sublime-text 2>/dev/null || echo "  -> Nota: VS Code/Sublime requieren repositorios externos para instalarse por apt."
 
-# 3. Descargar temas externos a ~/.config (No ensucian el GitHub)
+# ==========================================
+# 4. TEMAS EXTERNOS
+# ==========================================
 echo -e "${BLUE}[*] Descargando repositorios de estética...${NC}"
 mkdir -p ~/.config
 if [ ! -d "$HOME/.config/i3lock-fancy" ]; then
@@ -85,11 +90,12 @@ if [ ! -d "$HOME/.config/rofi-themes-collection" ]; then
     git clone https://github.com/lr-tech/rofi-themes-collection.git ~/.config/rofi-themes-collection
 fi
 
-# 4. Crear los Enlaces Simbólicos (Symlinks)
+# ==========================================
+# 5. CREAR ENLACES SIMBÓLICOS (SYMLINKS)
+# ==========================================
 echo -e "${BLUE}[*] Enlazando tus dotfiles...${NC}"
 DOTFILES_DIR="$HOME/dotfiles"
 
-# Array con todas las carpetas que guardaste en dotfiles/config/
 CARPETAS=(
     "bspwm" "sxhkd" "kitty" "nvim" 
     "picom" "polybar" "rofi" 
@@ -98,23 +104,22 @@ CARPETAS=(
     "cherrytree" "powershell"
 )
 
-# Bucle para enlazar cada carpeta automáticamente
 for carpeta in "${CARPETAS[@]}"; do
     if [ -d "$DOTFILES_DIR/config/$carpeta" ]; then
-        # Elimina el directorio destino si existe para evitar conflictos al enlazar
         rm -rf "$HOME/.config/$carpeta"
         ln -sfn "$DOTFILES_DIR/config/$carpeta" "$HOME/.config/$carpeta"
         echo -e "  -> Enlazado: $carpeta"
     fi
 done
 
-# Enlaces de la shell
 ln -sf "$DOTFILES_DIR/home/.zshrc" "$HOME/.zshrc"
 if [ -f "$DOTFILES_DIR/home/.p10k.zsh" ]; then
     ln -sf "$DOTFILES_DIR/home/.p10k.zsh" "$HOME/.p10k.zsh"
 fi
 
-# 5. Asegurar permisos de ejecución
+# ==========================================
+# 6. PERMISOS Y SHELL POR DEFECTO
+# ==========================================
 echo -e "${BLUE}[*] Aplicando permisos de ejecución a scripts y binarios...${NC}"
 chmod +x "$HOME/.config/bspwm/bspwmrc" 2>/dev/null || true
 chmod +x "$HOME/.config/sxhkd/sxhkdrc" 2>/dev/null || true
@@ -122,7 +127,6 @@ chmod +x "$HOME/.config/polybar/launch.sh" 2>/dev/null || true
 chmod +x "$HOME/.config/scripts/"* 2>/dev/null || true
 chmod +x "$HOME/.config/bin/"* 2>/dev/null || true
 
-# 6. Configurar Zsh por defecto
 if [ "$SHELL" != "/usr/bin/zsh" ] && [ "$SHELL" != "/bin/zsh" ]; then
     echo -e "${BLUE}[*] Cambiando shell por defecto a Zsh...${NC}"
     chsh -s $(which zsh)
