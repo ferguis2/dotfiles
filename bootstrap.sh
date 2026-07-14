@@ -36,21 +36,23 @@ if [ ! -d "$HOME/powerlevel10k" ]; then
     git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/powerlevel10k
 fi
 
-echo -e "${BLUE}[*] Instalando fuentes MesloLGS Nerd Font para Powerlevel10k y Kitty...${NC}"
+echo -e "${BLUE}[*] Instalando Hack Nerd Font para Kitty y tu entorno...${NC}"
 FONT_DIR="$HOME/.local/share/fonts"
 mkdir -p "$FONT_DIR"
 
-if [ ! -f "$FONT_DIR/MesloLGS NF Regular.ttf" ]; then
-    echo -e "  -> Descargando fuentes..."
-    wget -qO "$FONT_DIR/MesloLGS NF Regular.ttf" "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf"
-    wget -qO "$FONT_DIR/MesloLGS NF Bold.ttf" "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf"
-    wget -qO "$FONT_DIR/MesloLGS NF Italic.ttf" "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Italic.ttf"
-    wget -qO "$FONT_DIR/MesloLGS NF Bold Italic.ttf" "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf"
+# Verificar si Hack Nerd Font ya está instalada
+if ! fc-list : family | grep -iq "Hack Nerd Font"; then
+    echo -e "  -> Descargando Hack Nerd Font desde el repositorio oficial..."
+    wget -qO /tmp/Hack.zip "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/Hack.zip"
+    
+    echo -e "  -> Extrayendo fuentes..."
+    unzip -qo /tmp/Hack.zip -d "$FONT_DIR"
+    rm /tmp/Hack.zip
     
     echo -e "  -> Actualizando caché de fuentes..."
     fc-cache -fv
 else
-    echo -e "  -> Las fuentes ya están instaladas."
+    echo -e "  -> La fuente Hack Nerd Font ya está instalada."
 fi
 
 # ==========================================
