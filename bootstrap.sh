@@ -8,6 +8,33 @@ BLUE="\e[0;34m"
 GREEN="\e[0;32m"
 NC="\e[0m"
 
+echo -e "${BLUE}[*] Instalando motor de Powerlevel10k...${NC}"
+
+# Clonar el repositorio oficial de Powerlevel10k en el directorio de usuario
+if [ ! -d "$HOME/powerlevel10k" ]; then
+    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/powerlevel10k
+fi
+
+echo -e "${BLUE}[*] Instalando fuentes MesloLGS Nerd Font para Powerlevel10k y Kitty...${NC}"
+
+FONT_DIR="$HOME/.local/share/fonts"
+mkdir -p "$FONT_DIR"
+
+# Descargar las fuentes solo si no existen
+if [ ! -f "$FONT_DIR/MesloLGS NF Regular.ttf" ]; then
+    echo -e "  -> Descargando fuentes..."
+    wget -qO "$FONT_DIR/MesloLGS NF Regular.ttf" "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf"
+    wget -qO "$FONT_DIR/MesloLGS NF Bold.ttf" "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf"
+    wget -qO "$FONT_DIR/MesloLGS NF Italic.ttf" "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Italic.ttf"
+    wget -qO "$FONT_DIR/MesloLGS NF Bold Italic.ttf" "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf"
+    
+    # Refrescar la caché de fuentes de Linux para que el sistema las reconozca al instante
+    echo -e "  -> Actualizando caché de fuentes..."
+    fc-cache -fv
+else
+    echo -e "  -> Las fuentes ya están instaladas."
+fi
+
 echo -e "${BLUE}[*] Iniciando la automatización de tu entorno Kali Linux...${NC}"
 
 # 1. Actualizar el sistema e instalar paquetes básicos
