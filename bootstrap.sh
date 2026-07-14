@@ -91,7 +91,34 @@ fi
 if [ ! -d "$HOME/.config/rofi-themes-collection" ]; then
     git clone https://github.com/lr-tech/rofi-themes-collection.git ~/.config/rofi-themes-collection
 fi
+# ==========================================
+# 4.5 ADAPTAR RUTAS AL NUEVO ENTORNO (PARCHEO AUTOMÁTICO)
+# ==========================================
+echo -e "${BLUE}[*] Adaptando configuraciones para el usuario actual ($USER)...${NC}"
+DOTFILES_DIR="$HOME/dotfiles"
 
+# 1. Reemplazo global del usuario 'xoe' por el directorio actual en todos los archivos de texto
+# Esto soluciona automáticamente: .zshrc, target_status.sh, config.rasi, bookmarks y icons.screen0.yaml
+find "$DOTFILES_DIR" -type f ! -path "*/.git/*" ! -name "*.ttf" ! -name "*.otf" ! -name "*.png" ! -name "*.jpg" -exec sed -i "s|/home/xoe|$HOME|g" {} + 2>/dev/null || true
+
+# 2. Corregir fondo de pantalla en bspwmrc
+# Cambia la ruta absoluta del Desktop a una ruta relativa dentro de la configuración
+if [ -f "$DOTFILES_DIR/config/bspwm/bspwmrc" ]; then
+    sed -i "s|/bin/feh --bg-fill.*|feh --bg-fill $HOME/.config/bspwm/Fondo.jpg|g" "$DOTFILES_DIR/config/bspwm/bspwmrc"
+fi
+
+# 3. Corregir la ruta del binario de Kitty en sxhkdrc
+if [ -f "$DOTFILES_DIR/config/sxhkd/sxhkdrc" ]; then
+    sed -i 's|/opt/kitty/bin/kitty|kitty|g' "$DOTFILES_DIR/config/sxhkd/sxhkdrc"
+fi
+
+# 4. Corregir comandos de salida y bloqueo en los menús de Rofi
+for powermenu in "$DOTFILES_DIR/config/polybar/scripts/powermenu" "$DOTFILES_DIR/config/polybar/scripts/powermenu_alt"; do
+    if [ -f "$powermenu" ]; then
+        sed -i 's|openbox --exit|bspc quit|g' "$powermenu"
+        sed -i 's|i3lock|i3lock-fancy|g' "$powermenu"
+    fi
+done
 # ==========================================
 # 5. CREAR ENLACES SIMBÓLICOS (SYMLINKS)
 # ==========================================
