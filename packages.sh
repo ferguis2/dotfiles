@@ -13,6 +13,15 @@ install_packages() {
         log_info "Powerlevel10k ya se encuentra instalado."
     fi
 
+    log_info "Configurando NvChad (Neovim)..."
+    if [ ! -d "$HOME/.config/nvim" ]; then
+        log_info "Clonando repositorio oficial de NvChad..."
+        git clone https://github.com/NvChad/starter "$HOME/.config/nvim" --depth 1
+        log_success "NvChad base instalado correctamente."
+    else
+        log_info "La configuración de Neovim ya existe."
+    fi
+
     log_info "Configurando fuentes del sistema..."
     local font_dir="$HOME/.local/share/fonts"
     mkdir -p "$font_dir"
