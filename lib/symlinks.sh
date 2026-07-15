@@ -1,44 +1,38 @@
 patch_configurations() {
-    log_info "Iniciando parchado dinámico de configuraciones..."
+    log_info "Iniciando parchado dinámico..."
 
     # 1. Asignar propiedad al usuario actual
-    log_info "Ajustando permisos y propietario a $USER..."
     sudo chown -R $USER:$USER "$DOTFILES_DIR"
 
-    # 2. Permisos de ejecución automáticos
-    log_info "Otorgando permisos de ejecución a los scripts del sistema..."
+    # 2. Otorgar permisos de ejecución absolutos
+    log_info "Ajustando permisos de ejecución..."
     find "$DOTFILES_DIR" -type f -name "*.sh" -exec chmod +x {} + 2>/dev/null || true
     chmod +x "$DOTFILES_DIR/config/bspwm/bspwmrc" 2>/dev/null || true
     chmod +x "$DOTFILES_DIR/config/sxhkd/sxhkdrc" 2>/dev/null || true
-    if [ -d "$DOTFILES_DIR/config/scripts" ]; then chmod +x "$DOTFILES_DIR/config/scripts/"* 2>/dev/null || true; fi
-    if [ -d "$DOTFILES_DIR/config/bin" ]; then chmod +x "$DOTFILES_DIR/config/bin/"* 2>/dev/null || true; fi
-    if [ -d "$DOTFILES_DIR/config/polybar/scripts" ]; then chmod +x "$DOTFILES_DIR/config/polybar/scripts/"* 2>/dev/null || true; fi
+    [ -d "$DOTFILES_DIR/config/scripts" ] && chmod +x "$DOTFILES_DIR/config/scripts/"* 2>/dev/null || true
+    [ -d "$DOTFILES_DIR/config/bin" ] && chmod +x "$DOTFILES_DIR/config/bin/"* 2>/dev/null || true
+    [ -d "$DOTFILES_DIR/config/polybar/scripts" ] && chmod +x "$DOTFILES_DIR/config/polybar/scripts/"* 2>/dev/null || true
 
-    # 3. Adaptar rutas de /home/viejo a /home/nuevo
-    log_info "Adaptando rutas de inicio al usuario actual ($USER)..."
+    # 3. Corrección dinámica de rutas del usuario antiguo
+    log_info "Adaptando rutas de sistema..."
     find "$DOTFILES_DIR" -type f \
-        ! -path "*/.git/*" \
-        ! -name "*.ttf" \
-        ! -name "*.otf" \
-        ! -name "*.png" \
-        ! -name "*.jpg" \
+        ! -path "*/.git/*" ! -name "*.ttf" ! -name "*.otf" ! -name "*.png" ! -name "*.jpg" ! -name "*.zip" \
         -exec sed -E -i "s|/home/[a-zA-Z0-9_-]+|$HOME|g" {} + 2>/dev/null || true
 
-    # Parches específicos
+    # 4. Arreglar error silencioso de fzf en Zshrc
+    if [ -f "$DOTFILES_DIR/home/.zshrc" ]; then
+        sed -i 's|\[ -f ~/.fzf.zsh \] && source ~/.fzf.zsh|[ -f ~/.fzf.zsh ] \&\& source ~/.fzf.zsh \|\| true|g' "$DOTFILES_DIR/home/.zshrc"
+    fi
+
+    # 5. Fondo de pantalla en BSPWM
     if [ -f "$DOTFILES_DIR/config/bspwm/bspwmrc" ]; then
         sed -i "s|/bin/feh --bg-fill.*|feh --bg-fill \$HOME/.config/bspwm/Fondo.jpg \&|g" "$DOTFILES_DIR/config/bspwm/bspwmrc"
     fi
 
+    # 6. Ruta de Kitty
     if [ -f "$DOTFILES_DIR/config/sxhkd/sxhkdrc" ]; then
         sed -i 's|/opt/kitty/bin/kitty|kitty|g' "$DOTFILES_DIR/config/sxhkd/sxhkdrc"
     fi
 
-    for powermenu in "$DOTFILES_DIR/config/polybar/scripts/powermenu" "$DOTFILES_DIR/config/polybar/scripts/powermenu_alt"; do
-        if [ -f "$powermenu" ]; then
-            sed -i 's|openbox --exit|bspc quit|g' "$powermenu"
-            sed -i 's|i3lock|i3lock-fancy|g' "$powermenu"
-        fi
-    done
-
-    log_success "Parchado de archivos finalizado sin errores."
+    log_success "Parchado completado respetando tus archivos originales."
 }
