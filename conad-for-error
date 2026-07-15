@@ -1,0 +1,60 @@
+cat << 'EOF' > ~/Downloads/dotfiles/lib/symlinks.sh
+safe_symlink() {
+    local src="$1"
+    local dest="$2"
+
+    mkdir -p "$(dirname "$dest")"
+
+    if [ -e "$dest" ] || [ -L "$dest" ]; then
+        if [ -L "$dest" ]; then
+            rm "$dest"
+        else
+            log_warn "Respaldando archivo existente: $dest"
+            mv "$dest" "${dest}.backup_$(date +%Y%m%d_%H%M%S)"
+        fi
+    fi
+
+    ln -s "$src" "$dest"
+}
+
+create_symlinks() {
+    log_info "Generando enlaces simbólicos..."
+
+    safe_symlink "$DOTFILES_DIR/home/.zshrc" "$HOME/.zshrc"
+    safe_symlink "$DOTFILES_DIR/home/.p10k.zsh" "$HOME/.p10k.zsh"
+
+    local configs=(
+        "bspwm"
+        "sxhkd"
+        "polybar"
+        "rofi"
+        "kitty"
+        "picom"
+        "dunst"
+        "xfce4"
+        "scripts"
+        "bin"
+    )
+
+    for cfg in "${configs[@]}"; do
+        if [ -d "$DOTFILES_DIR/config/$cfg" ]; then
+            safe_symlink "$DOTFILES_DIR/config/$cfg" "$HOME/.config/$cfg"
+            log_success "Enlace enrutado: ~/.config/$cfg"
+        fi
+    done
+
+    if [ -d "$DOTFILES_DIR/config/nvim" ]; then
+        if [ -d "$DOTFILES_DIR/config/nvim/lua/custom" ]; then
+            safe_symlink "$DOTFILES_DIR/config/nvim/lua/custom" "$HOME/.config/nvim/lua/custom"
+        else
+            safe_symlink "$DOTFILES_DIR/config/nvim" "$HOME/.config/nvim"
+        fi
+    fi
+
+    if [ -f "$DOTFILES_DIR/gtk-3.0/bookmarks" ]; then
+        safe_symlink "$DOTFILES_DIR/gtk-3.0/bookmarks" "$HOME/.config/gtk-3.0/bookmarks"
+    fi
+
+    log_success "Todos los enlaces simbólicos han sido creados correctamente."
+}
+EOF
