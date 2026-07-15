@@ -1,17 +1,20 @@
 patch_configurations() {
     log_info "Iniciando parchado dinámico de configuraciones..."
 
-    # 1. Asignar propiedad al usuario actual (adiós al usuario 'xoe')
+    # 1. Asignar propiedad al usuario actual
     log_info "Ajustando permisos y propietario a $USER..."
     sudo chown -R $USER:$USER "$DOTFILES_DIR"
 
-    # 2. Dar permisos de ejecución automáticamente a todo lo que sea script
-    log_info "Otorgando permisos de ejecución a los módulos de Polybar y BSPWM..."
+    # 2. Permisos de ejecución automáticos
+    log_info "Otorgando permisos de ejecución a los scripts del sistema..."
     find "$DOTFILES_DIR" -type f -name "*.sh" -exec chmod +x {} + 2>/dev/null || true
-    chmod +x "$DOTFILES_DIR/config/scripts/"* 2>/dev/null || true
-    chmod +x "$DOTFILES_DIR/config/bin/"* 2>/dev/null || true
+    chmod +x "$DOTFILES_DIR/config/bspwm/bspwmrc" 2>/dev/null || true
+    chmod +x "$DOTFILES_DIR/config/sxhkd/sxhkdrc" 2>/dev/null || true
+    if [ -d "$DOTFILES_DIR/config/scripts" ]; then chmod +x "$DOTFILES_DIR/config/scripts/"* 2>/dev/null || true; fi
+    if [ -d "$DOTFILES_DIR/config/bin" ]; then chmod +x "$DOTFILES_DIR/config/bin/"* 2>/dev/null || true; fi
+    if [ -d "$DOTFILES_DIR/config/polybar/scripts" ]; then chmod +x "$DOTFILES_DIR/config/polybar/scripts/"* 2>/dev/null || true; fi
 
-    # 3. Corrección dinámica de rutas (cambia /home/xoe a /home/tu_usuario_actual)
+    # 3. Adaptar rutas de /home/viejo a /home/nuevo
     log_info "Adaptando rutas de inicio al usuario actual ($USER)..."
     find "$DOTFILES_DIR" -type f \
         ! -path "*/.git/*" \
