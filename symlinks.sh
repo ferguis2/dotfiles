@@ -1,17 +1,13 @@
-# Función para crear un enlace simbólico robusto y libre de errores
 safe_symlink() {
     local src="$1"
     local dest="$2"
 
-    # Asegura que el directorio padre del destino exista
     mkdir -p "$(dirname "$dest")"
 
-    # Si el destino ya existe o es un enlace roto
     if [ -e "$dest" ] || [ -L "$dest" ]; then
         if [ -L "$dest" ]; then
-            rm "$dest" # Si es un enlace roto o viejo, se borra directamente
+            rm "$dest"
         else
-            log_warn "Se detectó un archivo real en $dest. Respaldando..."
             mv "$dest" "${dest}.backup_$(date +%Y%m%d_%H%M%S)"
         fi
     fi
@@ -20,13 +16,12 @@ safe_symlink() {
 }
 
 create_symlinks() {
-    log_info "Generando enlaces simbólicos del sistema..."
+    log_info "Generando enlaces simbólicos..."
 
-    # Enlaces de la carpeta personal (Home)
     safe_symlink "$DOTFILES_DIR/home/.zshrc" "$HOME/.zshrc"
     safe_symlink "$DOTFILES_DIR/home/.p10k.zsh" "$HOME/.p10k.zsh"
 
-    # Carpetas en .config
+    # AQUÍ ESTÁ LA MAGIA: 'scripts' y 'bin' ya están en la lista
     local configs=(
         "bspwm"
         "sxhkd"
@@ -36,18 +31,26 @@ create_symlinks() {
         "picom"
         "dunst"
         "xfce4"
+        "scripts"
+        "bin"
     )
 
     for cfg in "${configs[@]}"; do
         if [ -d "$DOTFILES_DIR/config/$cfg" ]; then
             safe_symlink "$DOTFILES_DIR/config/$cfg" "$HOME/.config/$cfg"
             log_success "Enlace enrutado: ~/.config/$cfg"
-        else
-            log_warn "No se encontró la carpeta 'config/$cfg' en tu repositorio."
         fi
     done
 
-    # Marcadores de Thunar (GTK-3.0)
+    # Automatización de NvChad
+    if [ -d "$DOTFILES_DIR/config/nvim" ]; then
+        if [ -d "$DOTFILES_DIR/config/nvim/lua/custom" ]; then
+            safe_symlink "$DOTFILES_DIR/config/nvim/lua/custom" "$HOME/.config/nvim/lua/custom"
+        else
+            safe_symlink "$DOTFILES_DIR/config/nvim" "$HOME/.config/nvim"
+        fi
+    fi
+
     if [ -f "$DOTFILES_DIR/gtk-3.0/bookmarks" ]; then
         safe_symlink "$DOTFILES_DIR/gtk-3.0/bookmarks" "$HOME/.config/gtk-3.0/bookmarks"
     fi
