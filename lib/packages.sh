@@ -24,6 +24,11 @@ install_packages() {
     unzip -q -o /tmp/Hack.zip -d "$font_dir"
     rm -f /tmp/Hack.zip
 
+    log_info "Instalando fuentes de iconos incluidas en los dotfiles..."
+    # Iosevka, Hurmit, feather, FontAwesome y Helvetica: usadas por polybar y rofi
+    find "$DOTFILES_DIR/fonts" "$DOTFILES_DIR/config/polybar/fonts" -type f \
+        \( -name "*.ttf" -o -name "*.otf" \) -exec cp -f {} "$font_dir/" \;
+
     log_info "Actualizando caché de tipografías..."
     fc-cache -fv >/dev/null
     log_success "Instalación completada con éxito."
